@@ -50,3 +50,82 @@ plt.xlabel('x')
 plt.ylabel('y')
 plt.legend()
 plt.show()
+
+# Create a linear regression class
+
+class linear_regression(nn.Module):
+    #constructor
+    def __init__(self, input_size, output_size):
+        super(linear_regression, self).__init__()
+        self.linear = nn.Linear(input_size, output_size)
+
+    # forward fucntion/ prediction
+    def forward(self, x):
+        yhat = self.linear(x)
+        return yhat
+
+# created the loss and data loader
+criterion = nn.MSELoss()
+trainloader = DataLoader(dataset = train_data, batch_size = 1)
+
+# create a learning rate list, the error list and the MODELS list#
+learning_rates = [0.0001, 0.001, 0.01, 0.1]
+
+train_error = torch.zeros(len(learning_rates))
+validation_error = torch.zeros(len(learning_rates))
+# Create a model list to contain the models
+MODELS = []
+
+
+# Define the train model function and train the model
+
+def train_model_with_lr(iter, lr_list):
+    # iterate through different learning rates
+    for i, lr in enumerate(lr_list):
+        model = linear_regression(1, 1)
+        optimizer = optim.SGD(model.parameters(), lr=lr)
+        for epoch in range(iter):
+            for x, y in trainloader:
+                yhat = model(x)
+                loss = criterion(yhat, y)
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+
+        # train data
+        Yhat = model(train_data.x)
+        train_loss = criterion(Yhat, train_data.y)
+        train_error[i] = train_loss.item()
+
+        # validation data
+        Yhat = model(val_data.x)
+        val_loss = criterion(Yhat, val_data.y)
+        validation_error[i] = val_loss.item()
+        MODELS.append(model)
+
+
+train_model_with_lr(10, learning_rates)
+
+# this plots the training and validation loss for each learning rate
+
+plt.semilogx(np.array(learning_rates), train_error.numpy(), label = 'training loss/total Loss')
+plt.semilogx(np.array(learning_rates), validation_error.numpy(), label = 'validation cost/total Loss')
+plt.ylabel('Cost\ Total Loss')
+plt.xlabel('learning rate')
+plt.legend()
+plt.show()
+
+
+# this plolts the prediction for each model
+
+i = 0
+for model, learning_rate in zip(MODELS, learning_rates):
+    yhat = model(val_data.x)
+    plt.plot(val_data.x.numpy(), yhat.detach().numpy(), label = 'lr:' + str(learning_rate))
+    print(i, yhat.detach().numpy()[0:3])
+    i+=1
+plt.plot(val_data.x.numpy(), val_data.f.numpy(), 'or', label = 'validation data')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.legend()
+plt.show()
