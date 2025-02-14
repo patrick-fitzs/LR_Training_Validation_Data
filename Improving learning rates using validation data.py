@@ -41,3 +41,12 @@ class Data(Dataset):
 train_data = Data()
 # Create validation dataset with train = False which means it will not have outliers
 val_data = Data(train = False)
+
+ # Here we plot the data with the outliers which are apparent
+
+plt.plot(train_data.x.numpy(), train_data.y.numpy(), 'xr',label="training data ")
+plt.plot(train_data.x.numpy(), train_data.f.numpy(),label="true function  ")
+plt.xlabel('x')
+plt.ylabel('y')
+plt.legend()
+plt.show()
